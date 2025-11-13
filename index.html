@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SMM Panel Pro Order System (Global)</title>
+<style>
+/* =================== THEME / LAYOUT (professional) =================== */
+:root {
+  --bg-dark: #0f1115;
+  --bg-container: #1b1d22;
+  --text-light: #e4e6eb;
+  --text-muted: #a1a1a1;
+  --accent-blue: #4a90e2;
+  --accent-green: #4CAF50;
+  --accent-red: #ff6b6b;
+  --border-gray: #333;
+  --radius: 12px;
+}
+body{font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif;background:var(--bg-dark);color:var(--text-light);padding:20px;line-height:1.6;}
+.container{max-width:520px;margin:0 auto;background:var(--bg-container);padding:32px 28px;border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,0.55);animation:fadeIn .45s ease}
+h2{text-align:center;color:var(--accent-blue);border-bottom:2px solid var(--border-gray);padding-bottom:12px;margin-bottom:28px;font-weight:700}
+h3{color:var(--accent-blue);margin-bottom:12px}
+label{display:block;margin-top:14px;margin-bottom:6px;font-weight:600}
+input[type="text"],#total_price{width:100%;padding:13px;border-radius:8px;border:1px solid #3a3a3a;background:#26292f;color:var(--text-light);font-size:1rem;transition:all .25s ease}
+input[type="text"]:focus{border-color:var(--accent-blue);box-shadow:0 0 8px rgba(74,144,226,.4);outline:none}
+
+/* speed buttons */
+.speed-buttons{display:flex;gap:10px}
+.speed-buttons button{flex:1;padding:10px;border:none;border-radius:25px;background:#2a2d33;color:var(--text-light);font-weight:600;cursor:pointer;transition:all .2s ease}
+.speed-buttons button.active{background:var(--accent-blue);box-shadow:0 3px 8px rgba(74,144,226,.4)}
+.speed-buttons button:hover:not(.active){background:#33373e}
+
+/* primary buttons */
+#orderSubmit{width:100%;background:var(--accent-green);border:none;color:#fff;padding:17px 20px;border-radius:8px;font-size:1.1em;font-weight:700;margin-top:30px;cursor:pointer;transition:all .25s ease}
+#orderSubmit:hover{background:#43A047}
+#orderSubmit:active{transform:scale(.98)}
+
+.price-list{border:1px solid #383a40;background:#23262b;padding:20px;border-radius:8px;margin-bottom:24px}
+.price-list ul{list-style:none;padding:0}
+.price-list li{display:flex;justify-content:space-between;border-bottom:1px dotted #3c3c3c;padding:6px 0;color:var(--text-muted)}
+.price-list li span:last-child{color:#66bb6a;font-weight:700}
+.price-display{margin-top:20px;background:#201616;color:var(--accent-red);border:1px solid var(--accent-red);border-radius:8px;text-align:center;padding:14px;font-weight:600}
+
+/* payment */
+#payment-section{display:none;padding-top:20px}
+.payment-info{border:2px solid var(--accent-blue);border-radius:10px;background:#222631;padding:25px;text-align:center}
+#totalAmountDisplay{background:#131518;border:3px solid #66bb6a;border-radius:10px;color:#66bb6a;font-size:1.9em;font-weight:800;text-align:center;padding:18px;margin-bottom:25px}
+#upiQrCode{width:240px;height:auto;border:4px solid var(--accent-blue);border-radius:10px;margin:18px auto;display:block}
+.upi-link{display:inline-block;padding:13px 20px;background:#ffc107;color:#1a1a1a;font-weight:700;border-radius:8px;text-decoration:none;margin-top:15px;transition:background .3s}
+.upi-link:hover{background:#e0a800}
+.app-logos{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.app-logos img{width:40px;height:40px;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+
+.gateway-link{display:flex;align-items:center;gap:10px;background:#272a30;border:1px solid #3a3a3a;padding:14px;border-radius:8px;color:#e8e8e8;text-decoration:none;margin-top:10px;font-weight:600;transition:background .3s}
+.gateway-link:hover{background:#33373e}
+.gateway-link img{width:24px;height:24px;border-radius:4px}
+
+/* messages */
+.message{margin-top:15px;padding:12px;border-radius:8px;font-weight:600;display:none}
+.error{background:#4a1b1c;border:1px solid #ff6b6b;color:#ff6b6b}
+.success{background:#15351b;border:1px solid #66bb6a;color:#66bb6a}
+#utrSubmitButton{background:var(--accent-blue);color:#fff;border:none;border-radius:8px;padding:13px 26px;margin-top:20px;font-weight:700;cursor:pointer;transition:background .3s}
+#utrSubmitButton:hover{background:#3b7ad8}
+
+/* animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* responsive */
+@media (max-width:520px){body{padding:10px}.container{border-radius:0;box-shadow:none;padding:22px 18px}.speed-buttons{flex-wrap:wrap;gap:6px}.speed-buttons button{flex-basis:calc(33.3% - 6px);font-size:.9em}#totalAmountDisplay{font-size:1.6em;padding:14px}.app-logos img{width:32px;height:32px}}
+
+/* =================== SIMULATED PHONEPE-LIKE VERIFICATION MODAL =================== */
+.verify-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .18s ease}
+.verify-overlay.active{opacity:1;pointer-events:auto}
+.verify-card{width:320px;max-width:92%;background:#0b1220;border-radius:16px;padding:18px 18px 14px;border:1px solid rgba(255,255,255,.04);box-shadow:0 12px 40px rgba(2,6,23,.7);text-align:left;color:var(--text-light);font-weight:600}
+.verify-top{display:flex;align-items:center;gap:12px}
+.verify-logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#1e40af);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:18px}
+.verify-title{font-size:1.02rem}
+.verify-sub{font-size:.85rem;color:var(--text-muted);margin-top:6px}
+.verify-progress{margin-top:14px}
+.step{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);margin-bottom:8px}
+.step .dot{width:12px;height:12px;border-radius:50%;background:#3a3a3a;flex-shrink:0;box-shadow:inset 0 -2px 0 rgba(0,0,0,.4)}
+.step.active .dot{background:linear-gradient(90deg,#7dd3fc,#2563eb);box-shadow:0 4px 10px rgba(37,99,235,.18)}
+.step .label{flex:1;font-size:.95rem}
+.step .status{font-size:.85rem;color:var(--text-muted)}
+.verify-spinner{display:flex;align-items:center;justify-content:center;margin-top:12px}
+.spinner{width:44px;height:44px;border-radius:50%;border:4px solid rgba(255,255,255,.06);border-top-color:linear-gradient(90deg,#6ee7b7,#06b6d4);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.success-badge{display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:10px}
+.success-badge.active{display:flex}
+.check-circle{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(6,95,70,.28)}
+.checkmark{color:#fff;font-size:38px;font-weight:800}
+.verify-note{font-size:.82rem;color:var(--text-muted);margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+
+<audio id="typingSound" src="typing_sound.mp3" preload="metadata"></audio>
+
+<div class="container">
+  <!-- ORDER SECTION -->
+  <div id="order-section" class="form-section">
+    <h2>🚀 INSTAGRAM SUPER FAST FOLLOWERS</h2>
+
+    <div class="price-list">
+      <h3>Service Rates (Updated Price List)</h3>
+      <ul>
+        <li><span>✅ 100 Followers</span><span>₹9.40</span></li>
+        <li><span>✅ 500 Followers</span><span>₹47.00</span></li>
+        <li><span>✅ 1K Followers</span><span>₹94.00</span></li>
+        <li><span>✅ 50K Followers</span><span>₹4700.00</span></li>
+      </ul>
+    </div>
+
+    <form id="orderForm" onsubmit="processOrder(event)">
+      <label>🎯 Instagram Username *</label>
+      <input type="text" id="username" placeholder="@your_instagram_handle" required oninput="formatUsername(this)">
+      <label>📱 WhatsApp Number *</label>
+      <input type="text" id="whatsapp" placeholder="98XXXXXXXX" required pattern="[0-9]{10,15}">
+      <label>⏱️ Service Speed</label>
+      <div class="speed-buttons">
+        <button type="button" data-speed="Fast" class="active">🚀 Fast</button>
+        <button type="button" data-speed="Medium">⏳ Medium</button>
+        <button type="button" data-speed="Slow">🐌 Slow</button>
+        <input type="hidden" id="service_speed" value="Fast">
+      </div>
+      <label>🔢 Quantity (Min:100, Max:100000) *</label>
+      <input type="text" id="quantity" value="100" required oninput="calculatePrice(); playTypingSound();" inputmode="numeric">
+      <label>💵 Total Price (₹)</label>
+      <input type="text" id="total_price" value="9.40" readonly>
+      <div class="price-display">Delivery Time: 1 Minute – 2 Hours</div>
+      <input type="hidden" id="final_price" value="9.40">
+      <input type="submit" value="Place Order & Proceed to Payment" id="orderSubmit">
+    </form>
+  </div>
+
+  <!-- PAYMENT SECTION -->
+  <div id="payment-section" class="form-section">
+    <h2>💳 Complete Payment</h2>
+    <div id="totalAmountDisplay">Amount Payable: ₹<span id="payableAmount">0.00</span></div>
+
+    <div class="payment-info">
+      <h3>🇮🇳 Pay via UPI (Recommended)</h3>
+      <img id="upiQrCode" src="" alt="Scan QR to Pay">
+      <div class="upi-details">UPI ID: <strong>mixy@ptyes</strong></div>
+      <a href="javascript:void(0);" class="upi-link" onclick="copyUpiId(event)">📋 Copy UPI ID</a>
+      <p style="color:#66bb6a;margin-top:15px;">Please pay the EXACT amount shown above.</p>
+
+      <div class="app-logos">
+        <img src="paytm_logo.png" alt="Paytm">
+        <img src="phonepe_logo.png" alt="PhonePe">
+        <img src="gpay_logo.png" alt="Google Pay">
+        <img src="bhim_upi_logo.png" alt="BHIM UPI">
+        <img src="fampay_logo.png" alt="Fampay">
+        <img src="mobikwik_logo.png" alt="Mobikwik">
+      </div>
+
+      <hr style="border:0;height:1px;background:#333;margin:30px 0;">
+      <h3>🌍 International Payment (5% Bonus)</h3>
+      <a href="#" class="gateway-link" onclick="alert('Redirecting to Cryptomus...');return false;">
+        <img src="cryptomus_logo.png" alt=""><span>Cryptomus | USDT | Bitcoin | Ethereum | LTC (5% Bonus)</span>
+      </a>
+      <a href="#" class="gateway-link" onclick="alert('Redirecting to Payeer...');return false;">
+        <img src="payeer_logo.png" alt=""><span>Payeer | Advcash | Perfect Money (5% Bonus)</span>
+      </a>
+      <a href="#" class="gateway-link" onclick="alert('Redirecting to Binance Pay...');return false;">
+        <img src="binance_pay_logo.png" alt=""><span>Binance Pay (5% Bonus)</span>
+      </a>
+      <p style="color:#ff6b6b;margin-top:15px;">Note: International payments require manual confirmation below.</p>
+    </div>
+
+    <form id="utrForm">
+      <h3>Enter Transaction ID / UTR / Hash</h3>
+      <input type="text" id="utrInput" placeholder="Enter your UTR or Crypto Hash" maxlength="50" required>
+      <button type="submit" id="utrSubmitButton">Verify Payment</button>
+      <div id="messageDisplay" class="message"></div>
+    </form>
+  </div>
+</div>
+
+<!-- SIMULATED VERIFICATION OVERLAY -->
+<div id="verifyOverlay" class="verify-overlay" aria-hidden="true">
+  <div class="verify-card" role="dialog" aria-modal="true" aria-labelledby="verifyTitle">
+    <div class="verify-top">
+      <div class="verify-logo">PP</div>
+      <div style="flex:1">
+        <div id="verifyTitle" class="verify-title">Verifying payment</div>
+        <div id="verifySub" class="verify-sub">Demo verification — simulated UI</div>
+      </div>
+    </div>
+
+    <div class="verify-progress" id="verifyProgress">
+      <div class="step" id="step1">
+        <div class="dot"></div>
+        <div class="label">Connecting to UPI</div>
+        <div class="status" id="status1">Pending</div>
+      </div>
+      <div class="step" id="step2">
+        <div class="dot"></div>
+        <div class="label">Verifying transaction</div>
+        <div class="status" id="status2">Pending</div>
+      </div>
+      <div class="step" id="step3">
+        <div class="dot"></div>
+        <div class="label">Finalizing</div>
+        <div class="status" id="status3">Pending</div>
+      </div>
+
+      <div class="verify-spinner" id="spinnerWrap" style="margin-top:10px;">
+        <div class="spinner" aria-hidden="true"></div>
+      </div>
+
+      <div class="success-badge" id="successBadge" style="margin-top:10px;">
+        <div class="check-circle"><div class="checkmark">✓</div></div>
+        <div style="font-weight:800;color:#aef3c6">Payment Verified</div>
+      </div>
+
+      <div class="verify-note" id="verifyNote">This is a simulated verification for demo purposes only.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =================== CONSTANTS & ELEMENTS =================== */
+const PRICE_PER_1K = 94.0, MIN_QTY = 100, MAX_QTY = 100000, UPI_ID = 'mixy@ptyes';
+const typingAudio = document.getElementById('typingSound');
+const orderSection = document.getElementById('order-section'), paymentSection = document.getElementById('payment-section');
+const utrForm = document.getElementById('utrForm'), utrInput = document.getElementById('utrInput');
+const messageDisplay = document.getElementById('messageDisplay'), payableAmountSpan = document.getElementById('payableAmount');
+const quantityInput = document.getElementById('quantity'), upiQrCodeImg = document.getElementById('upiQrCode');
+
+/* Verification elements */
+const verifyOverlay = document.getElementById('verifyOverlay');
+const step1 = document.getElementById('step1'), step2 = document.getElementById('step2'), step3 = document.getElementById('step3');
+const status1 = document.getElementById('status1'), status2 = document.getElementById('status2'), status3 = document.getElementById('status3');
+const spinnerWrap = document.getElementById('spinnerWrap'), successBadge = document.getElementById('successBadge');
+
+/* =================== EVENT LISTENERS =================== */
+document.querySelectorAll('.speed-buttons button').forEach(btn=>{
+  btn.addEventListener('click',()=>{document.querySelectorAll('.speed-buttons button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('service_speed').value=btn.dataset.speed;});
+});
+quantityInput.addEventListener('input',()=>{calculatePrice(); playTypingSound();});
+
+/* =================== FUNCTIONS =================== */
+function playTypingSound(){typingAudio.currentTime=0;typingAudio.play();}
+function formatUsername(input){if(!input.value.startsWith('@'))input.value='@'+input.value.replace(/@/g,'');}
+function calculatePrice(){
+  let qty=parseInt(quantityInput.value)||100; qty=Math.min(Math.max(qty,MIN_QTY),MAX_QTY);
+  const total=((qty/1000)*PRICE_PER_1K).toFixed(2);
+  document.getElementById('total_price').value=total;
+  document.getElementById('final_price').value=total;
+  payableAmountSpan.textContent=total;
+  upiQrCodeImg.src=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=upi://pay?pa=${UPI_ID}&pn=MixyServer&am=${total}`;
+}
+calculatePrice();
+
+function copyUpiId(e){e.preventDefault();navigator.clipboard.writeText(UPI_ID).then(()=>alert('UPI ID copied!'))}
+
+/* =================== ORDER PROCESS =================== */
+function processOrder(e){
+  e.preventDefault();
+  orderSection.style.display='none';
+  paymentSection.style.display='block';
+  calculatePrice();
+}
+
+/* =================== PAYMENT VERIFICATION SIMULATION =================== */
+utrForm.addEventListener('submit',function(e){
+  e.preventDefault();
+  const txId=utrInput.value.trim();
+  if(!txId){messageDisplay.textContent='Enter valid UTR/Hash';messageDisplay.className='message error';messageDisplay.style.display='block';return;}
+  messageDisplay.style.display='none';
+  startVerificationSimulation(txId);
+});
+
+function startVerificationSimulation(txId){
+  verifyOverlay.classList.add('active');
+  status1.textContent='Processing...';
+  status2.textContent='Pending'; status3.textContent='Pending';
+  step1.classList.add('active'); step2.classList.remove('active'); step3.classList.remove('active');
+  spinnerWrap.style.display='flex';
+  successBadge.classList.remove('active');
+
+  setTimeout(()=>{
+    status1.textContent='✔ Connected'; step2.classList.add('active');
+    status2.textContent='Processing...';
+  },1200);
+  setTimeout(()=>{
+    status2.textContent='✔ Verified'; step3.classList.add('active');
+    status3.textContent='Processing...';
+  },2400);
+  setTimeout(()=>{
+    status3.textContent='✔ Completed';
+    spinnerWrap.style.display='none';
+    successBadge.classList.add('active');
+    setTimeout(()=>{verifyOverlay.classList.remove('active'); showLoggedMessage(txId);},800);
+  },3600);
+}
+
+/* =================== AFTER SUCCESSFUL PAYMENT =================== */
+function showLoggedMessage(txId){
+  const finalAmount = document.getElementById('final_price').value || '0.00';
+  const username = document.getElementById('username').value || 'N/A';
+  const whatsapp = document.getElementById('whatsapp').value || 'N/A';
+  const quantity = document.getElementById('quantity').value || '0';
+  const speed = document.getElementById('service_speed').value || 'Fast';
+
+  messageDisplay.style.display='block';
+  messageDisplay.className='message success';
+  messageDisplay.innerHTML=`✅ Payment Logged! Your order for ₹${finalAmount} has been placed.<br>TX ID: ${txId}. WhatsApp notification sent.`;
+  utrInput.disabled=true;
+  document.getElementById('utrSubmitButton').disabled=true;
+
+  // WhatsApp auto send
+  const msg=`New SMM Order:\nUsername: ${username}\nWhatsApp: ${whatsapp}\nQuantity: ${quantity}\nSpeed: ${speed}\nAmount Paid: ₹${finalAmount}\nTX ID: ${txId}`;
+  const waNumber='919040754205';
+  const waUrl=`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl,'_blank');
+}
+</script>
+</body>
+</html>
